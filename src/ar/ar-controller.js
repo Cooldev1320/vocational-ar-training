@@ -174,50 +174,25 @@ class WebXRARController {
       // Show the reticle when in AR
       this.reticleTarget.setAttribute('visible', true);
 
-      // Try direct XR session request first for better error messages
-      console.log('🔍 Attempting direct XR session request...');
-      this.statusText.textContent = 'Testing XR session...';
-
-      try {
-        const xrSession = await navigator.xr.requestSession('immersive-ar', {
-          requiredFeatures: ['local'],
-          optionalFeatures: ['hit-test', 'dom-overlay'],
-          domOverlay: { root: document.querySelector('#ui-overlay') }
-        });
-
-        console.log('✅ XR session created directly:', xrSession);
-        console.log('Session mode:', xrSession.mode);
-        console.log('Session features:', Array.from(xrSession.enabledFeatures || []));
-
-        // End the session immediately since A-Frame will create its own
-        await xrSession.end();
-        console.log('✅ Test session ended, now using A-Frame enterVR()');
-        this.statusText.textContent = 'Opening AR...';
-
-      } catch (directError) {
-        console.error('❌ Direct XR session request failed:', directError);
-        console.error('Direct error name:', directError?.name);
-        console.error('Direct error message:', directError?.message);
-        console.error('Direct error toString:', directError?.toString());
-
-        // Show specific error to user
-        if (directError?.name === 'NotAllowedError') {
-          this.statusText.textContent = '❌ AR blocked - check permissions';
-        } else if (directError?.name === 'NotSupportedError') {
-          this.statusText.textContent = '❌ AR features not supported';
-        } else if (directError?.message) {
-          this.statusText.textContent = `❌ ${directError.message}`;
-        } else {
-          this.statusText.textContent = '❌ AR session failed';
-        }
-
-        throw directError; // Re-throw to be caught by outer catch
-      }
-
-      // Now use A-Frame's enterVR method
+      // Use A-Frame's enterVR method directly
       console.log('📱 Calling A-Frame enterVR()...');
-      sceneEl.enterVR();
-      console.log('✅ enterVR() called (may not return promise)')
+      this.statusText.textContent = 'Opening AR...';
+
+      // enterVR() may not return a proper promise, so we rely on events
+      const enterVRResult = sceneEl.enterVR();
+
+      // If it returns a promise, await it
+      if (enterVRResult && typeof enterVRResult.then === 'function') {
+        try {
+          await enterVRResult;
+          console.log('✅ enterVR() resolved');
+        } catch (vrError) {
+          console.error('❌ enterVR() rejected:', vrError);
+          throw vrError;
+        }
+      } else {
+        console.log('⚠️ enterVR() did not return a promise, relying on events');
+      }
 
     } catch (error) {
       console.error('❌ Failed to enter AR:', error);

@@ -148,9 +148,9 @@ class ThreeJSARController {
     this.statusText.textContent = 'Starting AR...';
 
     try {
-      // Request XR session
+      // Request XR session with local-floor (standard for AR)
       this.xrSession = await navigator.xr.requestSession('immersive-ar', {
-        requiredFeatures: ['local'],
+        requiredFeatures: ['local-floor'],
         optionalFeatures: ['hit-test', 'dom-overlay'],
         domOverlay: { root: document.querySelector('#ui-overlay') }
       });
@@ -162,9 +162,9 @@ class ThreeJSARController {
       // Set the session for the renderer
       await this.renderer.xr.setSession(this.xrSession);
 
-      // Request hit test source using 'local' reference space (not 'viewer')
-      const viewerSpace = await this.xrSession.requestReferenceSpace('local');
-      this.hitTestSource = await this.xrSession.requestHitTestSource({ space: viewerSpace });
+      // Request hit test source using 'local-floor' reference space (standard for AR)
+      const localFloorSpace = await this.xrSession.requestReferenceSpace('local-floor');
+      this.hitTestSource = await this.xrSession.requestHitTestSource({ space: localFloorSpace });
 
       console.log('✅ Hit test source created');
 
