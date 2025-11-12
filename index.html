@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>WebXR AR - Hand Washing Training</title>
+  
+  <!-- Mobile debugging -->
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
+  
+  <!-- MediaPipe for Pose Detection -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js" crossorigin="anonymous"></script>
+
+  <!-- TensorFlow.js for MoveNet -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.0.0/dist/pose-detection.min.js"></script>
+  
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <!-- Mode Selector Screen -->
+  <div id="mode-selector" class="mode-selector">
+    <div class="mode-selector-content">
+      <h1 class="mode-selector-title">Choose Your Mode</h1>
+      <div class="mode-buttons">
+        <button id="ar-mode-btn" class="mode-button mode-button-ar">
+          <div class="mode-button-icon">📱</div>
+          <div class="mode-button-text">AR Mode</div>
+          <div class="mode-button-desc">Augmented Reality Experience</div>
+        </button>
+        <button id="pose-mode-btn" class="mode-button mode-button-pose">
+          <div class="mode-button-icon">👋</div>
+          <div class="mode-button-text">Pose Detection</div>
+          <div class="mode-button-desc">Track Hand Movements</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pose Engine Selector Sub-Menu -->
+  <div id="pose-engine-selector" class="mode-selector hidden">
+    <div class="mode-selector-content">
+      <h1 class="mode-selector-title">Choose Pose Engine</h1>
+      <p style="color: white; text-align: center; margin-bottom: 20px; font-size: 0.9rem;">Select which detection engine to use</p>
+      <div class="mode-buttons">
+        <button id="mediapipe-btn" class="mode-button mode-button-pose">
+          <div class="mode-button-icon">🔮</div>
+          <div class="mode-button-text">MediaPipe</div>
+          <div class="mode-button-desc">Google's ML Solution</div>
+        </button>
+        <button id="movenet-btn" class="mode-button mode-button-ar">
+          <div class="mode-button-icon">⚡</div>
+          <div class="mode-button-text">MoveNet</div>
+          <div class="mode-button-desc">TensorFlow.js (Faster)</div>
+        </button>
+        <button id="back-to-main-btn" class="mode-button" style="background: rgba(255,255,255,0.2);">
+          <div class="mode-button-text">← Back</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AR Mode Content -->
+  <div id="ar-mode" class="mode-content hidden">
+    <!-- Simplified UI - NO DOM OVERLAY -->
+    <div id="ui-overlay">
+    <div class="header">
+      <h1>AR Training</h1>
+      <p id="status">Checking...</p>
+    </div>
+
+    <div class="bottom-ui">
+      <div class="info-panel">
+        <p id="model-count">Models: 0</p>
+      </div>
+
+      <div class="controls">
+        <button id="ar-button" class="btn-primary">Start AR</button>
+        <button id="reset-button" class="btn-secondary">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- A-Frame Scene - Using A-Frame's built-in WebXR AR -->
+  <a-scene
+    id="scene"
+    renderer="colorManagement: true; alpha: true; antialias: true;"
+    vr-mode-ui="enabled: false"
+    webxr="referenceSpaceType: local;
+           optionalFeatures: hit-test, dom-overlay, dom-overlay-for-handheld-ar;
+           overlayElement: #ui-overlay;"
+    ar-hit-test="target: #reticle-target; enabled: false;"
+  >
+    <a-assets>
+      <a-asset-item id="boy" src="/models/boy.glb"></a-asset-item>
+    </a-assets>
+
+    <a-light type="ambient" intensity="1.0"></a-light>
+    <a-light type="directional" intensity="0.8" position="1 2 1"></a-light>
+
+    <!-- Camera will be controlled by WebXR in AR mode -->
+    <a-camera></a-camera>
+
+    <!-- Reticle target for hit testing -->
+    <a-ring
+      id="reticle-target"
+      radius-inner="0.15"
+      radius-outer="0.2"
+      rotation="-90 0 0"
+      material="color: #00ff00; shader: flat; side: double; opacity: 0.9; transparent: true"
+      visible="false">
+    </a-ring>
+
+    <!-- Container for placed models -->
+    <a-entity id="model-container"></a-entity>
+  </a-scene>
+  </div>
+
+  <!-- Pose Detection Mode Content -->
+  <div id="pose-mode" class="mode-content hidden">
+    <div class="pose-detection-container">
+      <video id="pose-video" autoplay playsinline></video>
+      <canvas id="pose-canvas"></canvas>
+      <div class="pose-controls">
+        <button id="back-to-selector" class="btn-back">← Back</button>
+        <div class="pose-status">
+          <p id="pose-status-text">Initializing...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

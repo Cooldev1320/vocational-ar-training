@@ -1,0 +1,524 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+}
+
+/* A-Frame scene */
+a-scene {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Hide A-Frame default UI */
+.a-enter-vr,
+.a-enter-ar {
+  display: none !important;
+}
+
+/* UI Overlay - Optimized for WebXR dom-overlay */
+#ui-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+
+  /* Ensure visibility during XR session */
+  isolation: isolate;
+}
+
+/* Enable pointer events for interactive elements */
+#ui-overlay button,
+#ui-overlay .controls,
+#ui-overlay .info-panel {
+  pointer-events: auto;
+}
+
+/* Header Section */
+.header {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 20px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.header h1 {
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.header p {
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Bottom UI Section */
+.bottom-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Info Panel */
+.info-panel {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 24px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+}
+
+.info-panel p {
+  color: #ffffff;
+  font-size: 0.95rem;
+  margin: 4px 0;
+  font-weight: 500;
+}
+
+#model-count {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+/* Controls Section */
+.controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+button {
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  min-width: 130px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-primary:disabled {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background: rgba(255, 59, 48, 0.9);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:active {
+  transform: scale(0.95);
+}
+
+/* Placement Reticle */
+#reticle {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10000;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+#reticle.hidden {
+  display: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.1rem;
+  }
+
+  .header p {
+    font-size: 0.85rem;
+  }
+
+  button {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    min-width: 110px;
+  }
+
+  .info-panel p {
+    font-size: 0.85rem;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  #ui-overlay {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 8px 16px;
+  }
+
+  .header h1 {
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+
+  .header p {
+    font-size: 0.75rem;
+  }
+
+  .info-panel {
+    padding: 8px 16px;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+
+  .controls {
+    gap: 8px;
+  }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+  #ui-overlay {
+    padding-top: max(env(safe-area-inset-top), 20px);
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+  }
+}
+
+/* Mode Selector Screen */
+.mode-selector {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.mode-selector.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.mode-selector-content {
+  width: 100%;
+  max-width: 600px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.mode-selector-title {
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 50px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  align-items: center;
+}
+
+.mode-button {
+  width: 100%;
+  max-width: 400px;
+  padding: 35px 30px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: scaleIn 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.mode-button:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.mode-button:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.mode-button:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+}
+
+.mode-button:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+.mode-button-ar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.mode-button-pose {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.mode-button-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
+}
+
+.mode-button-text {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.mode-button-desc {
+  font-size: 1rem;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* Mode Content */
+.mode-content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mode-content.hidden {
+  display: none;
+}
+
+/* Pose Detection Mode */
+.pose-detection-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+#pose-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror for better UX */
+}
+
+#pose-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror to match video */
+  z-index: 10;
+}
+
+.pose-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.btn-back {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  min-width: 120px;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.btn-back:active {
+  transform: translateY(0);
+}
+
+.pose-status {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pose-status p {
+  color: #ffffff;
+  font-size: 0.95rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Mobile optimizations for mode selector */
+@media (max-width: 768px) {
+  .mode-selector-title {
+    font-size: 2rem;
+    margin-bottom: 40px;
+  }
+
+  .mode-button {
+    padding: 30px 25px;
+    max-width: 350px;
+  }
+
+  .mode-button-icon {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+  }
+
+  .mode-button-text {
+    font-size: 1.5rem;
+  }
+
+  .mode-button-desc {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .mode-selector-content {
+    padding: 20px;
+  }
+
+  .mode-selector-title {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+  }
+
+  .mode-button {
+    padding: 25px 20px;
+  }
+
+  .mode-button-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+
+  .mode-button-text {
+    font-size: 1.3rem;
+  }
+}
