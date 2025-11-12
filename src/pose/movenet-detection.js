@@ -7,6 +7,8 @@ class MoveNetDetectionController {
     this.detector = null;
     this.isActive = false;
     this.animationFrameId = null;
+    this.positionLogContent = null;
+    this.isLogCollapsed = false;
 
     this.init();
   }
@@ -18,6 +20,18 @@ class MoveNetDetectionController {
     this.video = document.querySelector('#pose-video');
     this.canvas = document.querySelector('#pose-canvas');
     this.ctx = this.canvas.getContext('2d');
+
+    // Setup position logging
+    this.positionLogContent = document.querySelector('#position-log-content');
+    const toggleLogBtn = document.querySelector('#toggle-log');
+    const positionLog = document.querySelector('#position-log');
+
+    if (toggleLogBtn && positionLog) {
+      toggleLogBtn.addEventListener('click', () => {
+        positionLog.classList.toggle('collapsed');
+        this.isLogCollapsed = !this.isLogCollapsed;
+      });
+    }
 
     // Check TensorFlow.js availability
     console.log('📦 Checking TensorFlow.js availability...');
@@ -72,14 +86,19 @@ class MoveNetDetectionController {
   async startCamera() {
     try {
       console.log('📷 Starting camera...');
+      console.log('📱 User Agent:', navigator.userAgent);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 640 },
           height: { ideal: 480 },
-          facingMode: 'user'
+          facingMode: 'user'  // Always use front camera
         }
       });
+
+      console.log('✅ Camera stream obtained');
+      console.log('Video tracks:', stream.getVideoTracks().length);
+      console.log('Track settings:', stream.getVideoTracks()[0]?.getSettings());
 
       this.video.srcObject = stream;
 
@@ -87,12 +106,16 @@ class MoveNetDetectionController {
         this.video.onloadedmetadata = () => {
           this.canvas.width = this.video.videoWidth;
           this.canvas.height = this.video.videoHeight;
+          console.log(`📐 Video dimensions: ${this.video.videoWidth}x${this.video.videoHeight}`);
+          console.log(`📐 Canvas dimensions: ${this.canvas.width}x${this.canvas.height}`);
           this.video.play();
           resolve();
         };
       });
 
-      console.log('✅ Camera started');
+      console.log('✅ Camera started and playing');
+      console.log('Video readyState:', this.video.readyState);
+      console.log('Video paused:', this.video.paused);
       this.isActive = true;
 
       // Update status
@@ -130,6 +153,9 @@ class MoveNetDetectionController {
         // Draw keypoints and skeleton
         this.drawPose(pose);
 
+        // Log keypoint positions
+        this.logPositions(pose);
+
         // Update status
         const statusText = document.querySelector('#pose-status-text');
         if (statusText) {
@@ -139,6 +165,10 @@ class MoveNetDetectionController {
         const statusText = document.querySelector('#pose-status-text');
         if (statusText) {
           statusText.textContent = '⚠️ No person detected';
+        }
+        // Clear position log when no detection
+        if (this.positionLogContent) {
+          this.positionLogContent.innerHTML = '<p>No person detected</p>';
         }
       }
 
@@ -244,6 +274,39 @@ class MoveNetDetectionController {
       this.ctx.font = 'bold 16px Arial';
       this.ctx.fillText('RIGHT', x + 20, y);
     }
+  }
+
+  logPositions(pose) {
+    if (!this.positionLogContent || this.isLogCollapsed) return;
+
+    // MoveNet keypoint names
+    const keypointNames = [
+      'nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear',
+      'left_shoulder', 'right_shoulder', 'left_elbow', 'right_elbow',
+      'left_wrist', 'right_wrist', 'left_hip', 'right_hip',
+      'left_knee', 'right_knee', 'left_ankle', 'right_ankle'
+    ];
+
+    const keypoints = pose.keypoints;
+    let html = '<div style="font-size: 0.7rem; margin-bottom: 8px; color: #aaa;">MoveNet - 17 Keypoints</div>';
+
+    // Log important keypoints (hands and body center)
+    const importantIndices = [0, 5, 6, 9, 10, 11, 12]; // nose, shoulders, wrists, hips
+
+    importantIndices.forEach(index => {
+      const kp = keypoints[index];
+      if (kp && kp.score > 0.3) {
+        html += `
+          <div class="keypoint-entry">
+            <span class="keypoint-name">${keypointNames[index]}</span>
+            <span class="keypoint-coords">x: ${kp.x.toFixed(1)}, y: ${kp.y.toFixed(1)}</span>
+            <span class="keypoint-confidence">conf: ${(kp.score * 100).toFixed(0)}%</span>
+          </div>
+        `;
+      }
+    });
+
+    this.positionLogContent.innerHTML = html;
   }
 
   showError(message) {

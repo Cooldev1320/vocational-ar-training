@@ -43,6 +43,29 @@
     </div>
   </div>
 
+  <!-- AR Engine Selector Sub-Menu -->
+  <div id="ar-engine-selector" class="mode-selector hidden">
+    <div class="mode-selector-content">
+      <h1 class="mode-selector-title">Choose AR Engine</h1>
+      <p style="color: white; text-align: center; margin-bottom: 20px; font-size: 0.9rem;">Select which AR framework to use</p>
+      <div class="mode-buttons">
+        <button id="aframe-ar-btn" class="mode-button mode-button-pose">
+          <div class="mode-button-icon">🎬</div>
+          <div class="mode-button-text">A-Frame WebXR</div>
+          <div class="mode-button-desc">High-level Framework</div>
+        </button>
+        <button id="threejs-ar-btn" class="mode-button mode-button-ar">
+          <div class="mode-button-icon">🔷</div>
+          <div class="mode-button-text">Three.js WebXR</div>
+          <div class="mode-button-desc">Direct WebXR API</div>
+        </button>
+        <button id="back-to-main-ar-btn" class="mode-button" style="background: rgba(255,255,255,0.2);">
+          <div class="mode-button-text">← Back</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Pose Engine Selector Sub-Menu -->
   <div id="pose-engine-selector" class="mode-selector hidden">
     <div class="mode-selector-content">
@@ -59,7 +82,7 @@
           <div class="mode-button-text">MoveNet</div>
           <div class="mode-button-desc">TensorFlow.js (Faster)</div>
         </button>
-        <button id="back-to-main-btn" class="mode-button" style="background: rgba(255,255,255,0.2);">
+        <button id="back-to-main-pose-btn" class="mode-button" style="background: rgba(255,255,255,0.2);">
           <div class="mode-button-text">← Back</div>
         </button>
       </div>
@@ -92,7 +115,7 @@
     id="scene"
     renderer="colorManagement: true; alpha: true; antialias: true;"
     vr-mode-ui="enabled: false"
-    webxr="referenceSpaceType: local;
+    webxr="requiredFeatures: local;
            optionalFeatures: hit-test, dom-overlay, dom-overlay-for-handheld-ar;
            overlayElement: #ui-overlay;"
     ar-hit-test="target: #reticle-target; enabled: false;"
@@ -131,6 +154,16 @@
         <button id="back-to-selector" class="btn-back">← Back</button>
         <div class="pose-status">
           <p id="pose-status-text">Initializing...</p>
+        </div>
+      </div>
+      <!-- Position Logging Panel -->
+      <div id="position-log" class="position-log">
+        <div class="position-log-header">
+          <h3>Keypoint Positions</h3>
+          <button id="toggle-log" class="btn-toggle-log">Show/Hide</button>
+        </div>
+        <div id="position-log-content" class="position-log-content">
+          <p>No data yet...</p>
         </div>
       </div>
     </div>

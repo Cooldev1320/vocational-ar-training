@@ -9,6 +9,8 @@ class PoseDetectionController {
     this.isActive = false;
     this.animationFrameId = null;
     this.poseLandmarks = null;
+    this.positionLogContent = null;
+    this.isLogCollapsed = false;
 
     this.init();
   }
@@ -20,6 +22,18 @@ class PoseDetectionController {
     this.video = document.querySelector('#pose-video');
     this.canvas = document.querySelector('#pose-canvas');
     this.ctx = this.canvas.getContext('2d');
+
+    // Setup position logging
+    this.positionLogContent = document.querySelector('#position-log-content');
+    const toggleLogBtn = document.querySelector('#toggle-log');
+    const positionLog = document.querySelector('#position-log');
+
+    if (toggleLogBtn && positionLog) {
+      toggleLogBtn.addEventListener('click', () => {
+        positionLog.classList.toggle('collapsed');
+        this.isLogCollapsed = !this.isLogCollapsed;
+      });
+    }
 
     console.log('📦 Checking MediaPipe availability...');
     console.log('window.Pose:', typeof window.Pose, window.Pose);
@@ -247,6 +261,9 @@ class PoseDetectionController {
         this.drawHandLandmarks(rightWrist, rightIndex, rightThumb, '#00FFFF', 'RIGHT');
       }
 
+      // Log keypoint positions
+      this.logPositions(results.poseLandmarks);
+
       // Update status
       const statusText = document.querySelector('#pose-status-text');
       if (statusText) {
@@ -257,6 +274,10 @@ class PoseDetectionController {
       const statusText = document.querySelector('#pose-status-text');
       if (statusText) {
         statusText.textContent = '⚠️ No person detected';
+      }
+      // Clear position log when no detection
+      if (this.positionLogContent) {
+        this.positionLogContent.innerHTML = '<p>No person detected</p>';
       }
     }
 
@@ -393,6 +414,41 @@ class PoseDetectionController {
       this.ctx.lineWidth = 2;
       this.ctx.stroke();
     }
+  }
+
+  logPositions(landmarks) {
+    if (!this.positionLogContent || this.isLogCollapsed) return;
+
+    // MediaPipe Pose landmark names (33 keypoints)
+    const keypointNames = [
+      'nose', 'left_eye_inner', 'left_eye', 'left_eye_outer', 'right_eye_inner',
+      'right_eye', 'right_eye_outer', 'left_ear', 'right_ear', 'mouth_left',
+      'mouth_right', 'left_shoulder', 'right_shoulder', 'left_elbow', 'right_elbow',
+      'left_wrist', 'right_wrist', 'left_pinky', 'right_pinky', 'left_index',
+      'right_index', 'left_thumb', 'right_thumb', 'left_hip', 'right_hip',
+      'left_knee', 'right_knee', 'left_ankle', 'right_ankle', 'left_heel',
+      'right_heel', 'left_foot_index', 'right_foot_index'
+    ];
+
+    let html = '<div style="font-size: 0.7rem; margin-bottom: 8px; color: #aaa;">MediaPipe - 33 Keypoints</div>';
+
+    // Log important keypoints (hands, shoulders, nose, hips)
+    const importantIndices = [0, 11, 12, 15, 16, 19, 20, 21, 22, 23, 24]; // nose, shoulders, wrists, hands, hips
+
+    importantIndices.forEach(index => {
+      const lm = landmarks[index];
+      if (lm && lm.visibility > 0.5) {
+        html += `
+          <div class="keypoint-entry">
+            <span class="keypoint-name">${keypointNames[index]}</span>
+            <span class="keypoint-coords">x: ${lm.x.toFixed(3)}, y: ${lm.y.toFixed(3)}, z: ${lm.z.toFixed(3)}</span>
+            <span class="keypoint-confidence">vis: ${(lm.visibility * 100).toFixed(0)}%</span>
+          </div>
+        `;
+      }
+    });
+
+    this.positionLogContent.innerHTML = html;
   }
 
   startBasicPoseDetection() {
