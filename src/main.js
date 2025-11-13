@@ -8,8 +8,9 @@ class ModeManager {
     this.poseMode = document.querySelector('#pose-mode');
     this.arModeBtn = document.querySelector('#ar-mode-btn');
     this.poseModeBtn = document.querySelector('#pose-mode-btn');
-    this.aframeARBtn = document.querySelector('#aframe-ar-btn');
     this.threejsARBtn = document.querySelector('#threejs-ar-btn');
+    this.aframeARBtn = document.querySelector('#aframe-ar-btn');
+    this.eighthwallARBtn = document.querySelector('#eighthwall-ar-btn');
     this.mediaPipeBtn = document.querySelector('#mediapipe-btn');
     this.moveNetBtn = document.querySelector('#movenet-btn');
     this.backToMainARBtn = document.querySelector('#back-to-main-ar-btn');
@@ -19,9 +20,9 @@ class ModeManager {
     this.arController = null;
     this.poseController = null;
     this.currentMode = null;
-    this.currentPoseEngine = null; // Track which pose engine is active
-    this.currentAREngine = null; // Track which AR engine is active
-    this.switching = false; // Prevent rapid mode switches
+    this.currentPoseEngine = null;
+    this.currentAREngine = null;
+    this.switching = false;
 
     this.init();
   }
@@ -35,8 +36,9 @@ class ModeManager {
     // Set up event listeners
     this.arModeBtn.addEventListener('click', () => this.showAREngineSelector());
     this.poseModeBtn.addEventListener('click', () => this.showPoseEngineSelector());
-    this.aframeARBtn.addEventListener('click', () => this.startAFrameAR());
     this.threejsARBtn.addEventListener('click', () => this.startThreeJSAR());
+    this.aframeARBtn.addEventListener('click', () => this.startAFrameAR());
+    this.eighthwallARBtn.addEventListener('click', () => this.startEighthWallAR());
     this.mediaPipeBtn.addEventListener('click', () => this.startMediaPipePose());
     this.moveNetBtn.addEventListener('click', () => this.startMoveNetPose());
     this.backToMainARBtn.addEventListener('click', () => this.showModeSelector());
@@ -115,56 +117,6 @@ class ModeManager {
     console.log('✅ Pose engine selector ready');
   }
 
-  async startAFrameAR() {
-    if (this.switching) {
-      console.log('⚠️ Already switching modes, please wait...');
-      return;
-    }
-
-    this.switching = true;
-    console.log('🎬 Starting A-Frame WebXR AR');
-
-    // CRITICAL: Ensure pose detection is fully stopped
-    if (this.poseController) {
-      console.log('🛑 Force stopping pose detection before AR...');
-      this.poseController.stop();
-      await new Promise(resolve => setTimeout(resolve, 800));
-      console.log('✅ Pose cleanup done, WebGL released');
-    }
-
-    // Hide all selectors, show AR mode
-    this.modeSelector.classList.add('hidden');
-    this.arEngineSelector.classList.add('hidden');
-    this.poseEngineSelector.classList.add('hidden');
-    this.poseMode.classList.add('hidden');
-    this.arMode.classList.remove('hidden');
-    this.currentMode = 'ar';
-    this.currentAREngine = 'aframe';
-
-    // Initialize AR controller if not already done
-    if (!this.arController) {
-      try {
-        const { default: WebXRARController } = await import('./ar/ar-controller.js');
-        const scene = document.querySelector('#scene');
-        if (scene && scene.hasLoaded) {
-          console.log('✅ Scene already loaded, creating AR controller');
-          this.arController = new WebXRARController();
-        } else if (scene) {
-          console.log('⏳ Waiting for scene to load...');
-          scene.addEventListener('loaded', () => {
-            console.log('✅ Scene loaded, creating AR controller');
-            this.arController = new WebXRARController();
-          });
-        }
-      } catch (error) {
-        console.error('❌ Error loading AR controller:', error);
-      }
-    }
-
-    this.switching = false;
-    console.log('✅ A-Frame AR mode ready');
-  }
-
   async startThreeJSAR() {
     if (this.switching) {
       console.log('⚠️ Already switching modes, please wait...');
@@ -172,7 +124,7 @@ class ModeManager {
     }
 
     this.switching = true;
-    console.log('🔷 Starting Three.js WebXR AR');
+    console.log('🔷 Opening boy-model.html...');
 
     // CRITICAL: Ensure pose detection is fully stopped
     if (this.poseController) {
@@ -182,26 +134,8 @@ class ModeManager {
       console.log('✅ Pose cleanup done, WebGL released');
     }
 
-    // Hide all selectors, show AR mode
-    this.modeSelector.classList.add('hidden');
-    this.arEngineSelector.classList.add('hidden');
-    this.poseEngineSelector.classList.add('hidden');
-    this.poseMode.classList.add('hidden');
-    this.arMode.classList.remove('hidden');
-    this.currentMode = 'ar';
-    this.currentAREngine = 'threejs';
-
-    // Initialize Three.js AR controller
-    try {
-      console.log('🔧 Creating Three.js AR controller...');
-      const { default: ThreeJSARController } = await import('./ar/threejs-ar-controller.js');
-      this.arController = new ThreeJSARController();
-    } catch (error) {
-      console.error('❌ Error loading Three.js AR controller:', error);
-    }
-
-    this.switching = false;
-    console.log('✅ Three.js AR mode ready');
+    // Simply navigate to boy-model.html
+    window.location.href = '/example/boy-model.html';
   }
 
   async startMediaPipePose() {
@@ -299,6 +233,16 @@ class ModeManager {
     this.switching = false;
     console.log('✅ MoveNet pose detection mode ready');
   }
+
+  startAFrameAR() {
+    console.log('🌐 A-Frame WebXR - Coming Soon');
+    alert('A-Frame WebXR is coming soon!');
+  }
+
+  startEighthWallAR() {
+    console.log('🎯 Opening 8th Wall AR experience');
+    window.open('https://hoft.8thwall.app/vocational-ar-training/', '_blank');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -307,3 +251,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize mode manager
   new ModeManager();
 });
+

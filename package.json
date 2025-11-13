@@ -1,18 +1,22 @@
 {
-  "name": "vocational-ar-training",
-  "private": true,
-  "version": "0.0.0",
+  "name": "enva-xr-fresh",
+  "version": "0.0.4",
+  "description": "Environment aware augmented reality rendering using WebXR",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "aframe": "^1.6.0"
-  },
   "devDependencies": {
-    "vite": "^5.0.8",
-    "@vitejs/plugin-basic-ssl": "^1.0.2"
+    "@vitejs/plugin-basic-ssl": "^2.1.0",
+    "cannon-es": "^0.20.0",
+    "three": "^0.150.0",
+    "typescript": "^5.0.2",
+    "vite": "^5.0.0"
+  },
+  "peerDependencies": {
+    "cannon-es": ">0.20.0",
+    "three": ">0.150.0"
   }
 }

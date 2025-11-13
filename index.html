@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>WebXR AR - Hand Washing Training</title>
+  <title>WebXR AR - Boy Model Training</title>
   
   <!-- Mobile debugging -->
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
@@ -20,7 +20,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.0.0/dist/pose-detection.min.js"></script>
   
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
@@ -49,15 +48,20 @@
       <h1 class="mode-selector-title">Choose AR Engine</h1>
       <p style="color: white; text-align: center; margin-bottom: 20px; font-size: 0.9rem;">Select which AR framework to use</p>
       <div class="mode-buttons">
-        <button id="aframe-ar-btn" class="mode-button mode-button-pose">
-          <div class="mode-button-icon">🎬</div>
-          <div class="mode-button-text">A-Frame WebXR</div>
-          <div class="mode-button-desc">High-level Framework</div>
-        </button>
         <button id="threejs-ar-btn" class="mode-button mode-button-ar">
           <div class="mode-button-icon">🔷</div>
           <div class="mode-button-text">Three.js WebXR</div>
           <div class="mode-button-desc">Direct WebXR API</div>
+        </button>
+        <button id="aframe-ar-btn" class="mode-button mode-button-ar">
+          <div class="mode-button-icon">🌐</div>
+          <div class="mode-button-text">A-Frame WebXR</div>
+          <div class="mode-button-desc">Coming Soon</div>
+        </button>
+        <button id="eighthwall-ar-btn" class="mode-button mode-button-ar">
+          <div class="mode-button-icon">🎯</div>
+          <div class="mode-button-text">8th Wall</div>
+          <div class="mode-button-desc">8th Wall Platform</div>
         </button>
         <button id="back-to-main-ar-btn" class="mode-button" style="background: rgba(255,255,255,0.2);">
           <div class="mode-button-text">← Back</div>
@@ -91,7 +95,7 @@
 
   <!-- AR Mode Content -->
   <div id="ar-mode" class="mode-content hidden">
-    <!-- Simplified UI - NO DOM OVERLAY -->
+    <!-- UI Overlay -->
     <div id="ui-overlay">
     <div class="header">
       <h1>AR Training</h1>
@@ -108,41 +112,10 @@
         <button id="reset-button" class="btn-secondary">Reset</button>
       </div>
     </div>
-  </div>
+    </div>
 
-  <!-- A-Frame Scene - Using A-Frame's built-in WebXR AR -->
-  <a-scene
-    id="scene"
-    renderer="colorManagement: true; alpha: true; antialias: true;"
-    vr-mode-ui="enabled: false"
-    webxr="requiredFeatures: local-floor;
-           optionalFeatures: hit-test, dom-overlay, dom-overlay-for-handheld-ar;
-           overlayElement: #ui-overlay;"
-    ar-hit-test="target: #reticle-target; enabled: false;"
-  >
-    <a-assets>
-      <a-asset-item id="boy" src="/models/boy.glb"></a-asset-item>
-    </a-assets>
-
-    <a-light type="ambient" intensity="1.0"></a-light>
-    <a-light type="directional" intensity="0.8" position="1 2 1"></a-light>
-
-    <!-- Camera will be controlled by WebXR in AR mode -->
-    <a-camera></a-camera>
-
-    <!-- Reticle target for hit testing -->
-    <a-ring
-      id="reticle-target"
-      radius-inner="0.15"
-      radius-outer="0.2"
-      rotation="-90 0 0"
-      material="color: #00ff00; shader: flat; side: double; opacity: 0.9; transparent: true"
-      visible="false">
-    </a-ring>
-
-    <!-- Container for placed models -->
-    <a-entity id="model-container"></a-entity>
-  </a-scene>
+    <!-- Three.js Scene Container -->
+    <div id="scene"></div>
   </div>
 
   <!-- Pose Detection Mode Content -->

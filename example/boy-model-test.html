@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta name="HandheldFriendly" content="true" />
+		<title>Boy Model Test</title>
+	  </head>
+	<body>
+		<button id="start" style="display: block; position: absolute; background-color: #FF6666; width: 100%; height: 100%; top: 0px; left: 0px; text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 10vh; color: white; border: none;">
+			Start AR
+		</button>
+		<div id="debug" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: lime; padding: 10px; font-family: monospace; font-size: 11px; z-index: 1000; display: none; max-width: 90%; max-height: 300px; overflow-y: auto;"></div>
+
+		<!-- Eruda mobile console -->
+		<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+		<script>eruda.init();</script>
+
+        <script async src="./lib/es-module-shims.js"></script>
+        <script type="importmap">
+			{
+				"imports": {
+					"three": "./lib/three.module.js",
+					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+				}
+			}
+		</script>
+        <script type="module">
+            import {ARRenderer, Cursor} from "../src/enva.ts";
+            import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+            import {HemisphereLight, DirectionalLight, Mesh, SphereGeometry, MeshStandardMaterial} from "three";
+
+            const debugDiv = document.getElementById('debug');
+            let debugLines = [];
+
+            function log(msg) {
+                console.log(msg);
+                const timestamp = new Date().toLocaleTimeString();
+                debugLines.unshift('[' + timestamp + '] ' + msg);
+                if (debugLines.length > 15) debugLines.pop();
+                debugDiv.innerHTML = debugLines.join('<br>');
+            }
+
+            (async function () {
+                log('Initializing...');
+
+                const renderer = new ARRenderer({
+                    domOverlay: true,
+                    hitTest: true
+                });
+
+                log('Renderer created');
+
+                let cursor = new Cursor();
+                renderer.scene.add(cursor);
+                log('Cursor added');
+
+                // Add lights
+                const hemiLight = new HemisphereLight(0xffffff, 0x444444, 1.0);
+                hemiLight.position.set(0, 20, 0);
+                renderer.scene.add(hemiLight);
+
+                const dirLight = new DirectionalLight(0xffffff, 1.5);
+                dirLight.position.set(5, 10, 7.5);
+                renderer.scene.add(dirLight);
+
+                log('Lights added');
+
+                // Load boy model
+                let boyModel = null;
+                let modelLoaded = false;
+                log('Loading /models/boy.glb...');
+
+                const loader = new GLTFLoader();
+                loader.load(
+                    '/models/boy.glb',
+                    (gltf) => {
+                        boyModel = gltf.scene;
+                        boyModel.scale.set(0.5, 0.5, 0.5);
+
+                        let meshCount = 0;
+                        boyModel.traverse((child) => {
+                            if (child.isMesh) {
+                                meshCount++;
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                            }
+                        });
+
+                        modelLoaded = true;
+                        log('MODEL LOADED! Meshes: ' + meshCount);
+                    },
+                    (progress) => {
+                        if (progress.total > 0) {
+                            const percent = Math.round((progress.loaded / progress.total) * 100);
+                            log('Loading: ' + percent + '%');
+                        }
+                    },
+                    (error) => {
+                        log('ERROR: ' + error.message);
+                        console.error('Full error:', error);
+                    }
+                );
+
+                // Track placements
+                let sphereCount = 0;
+                let modelCount = 0;
+
+                // Double tap to place
+                renderer.domContainer.ondblclick = function(event) {
+                    log('===== DOUBLE TAP =====');
+                    log('Cursor visible: ' + cursor.visible);
+                    log('Model loaded: ' + modelLoaded);
+                    log('Scene children: ' + renderer.scene.children.length);
+
+                    if (!cursor.visible) {
+                        log('WARNING: No surface detected!');
+                        alert('Find a surface first!');
+                        return;
+                    }
+
+                    // ALWAYS place a test sphere
+                    const testSphere = new Mesh(
+                        new SphereGeometry(0.05, 16, 16),
+                        new MeshStandardMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 0.5 })
+                    );
+                    testSphere.position.copy(cursor.position);
+                    testSphere.position.y += 0.05;
+                    renderer.scene.add(testSphere);
+                    sphereCount++;
+                    log('SPHERE #' + sphereCount + ' placed!');
+                    log('  Pos: ' + testSphere.position.x.toFixed(2) + ', ' + testSphere.position.y.toFixed(2) + ', ' + testSphere.position.z.toFixed(2));
+
+                    // Try to place model
+                    if (modelLoaded && boyModel) {
+                        try {
+                            const modelClone = boyModel.clone(true);
+                            modelClone.position.copy(cursor.position);
+                            modelClone.position.x += 0.2;  // Offset so it doesn't overlap sphere
+                            modelClone.position.y += 0.1;
+
+                            // Force visibility on all children
+                            modelClone.visible = true;
+                            modelClone.traverse((child) => {
+                                child.visible = true;
+                            });
+
+                            renderer.scene.add(modelClone);
+                            modelCount++;
+
+                            log('BOY MODEL #' + modelCount + ' placed!');
+                            log('  Pos: ' + modelClone.position.x.toFixed(2) + ', ' + modelClone.position.y.toFixed(2) + ', ' + modelClone.position.z.toFixed(2));
+                            log('  Scale: ' + modelClone.scale.x);
+                            log('  Children: ' + modelClone.children.length);
+                        } catch (error) {
+                            log('MODEL ERROR: ' + error.message);
+                            console.error(error);
+                        }
+                    } else {
+                        log('Model not ready yet!');
+                    }
+
+                    log('Total scene children: ' + renderer.scene.children.length);
+                };
+
+                var button = document.getElementById("start");
+                button.onclick = async () =>
+                {
+                    log('Starting AR...');
+                    try {
+                        await renderer.start();
+                        button.style.display = 'none';
+                        debugDiv.style.display = 'block';
+                        log('AR STARTED! Find surface and double-tap.');
+                        log('Pink spheres will ALWAYS appear.');
+                        log('Boy model appears IF loaded.');
+                    } catch (error) {
+                        log('AR START FAILED: ' + error.message);
+                        alert('AR failed: ' + error.message);
+                    }
+                };
+            })();
+        </script>
+	</body>
+</html>
