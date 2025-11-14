@@ -11,6 +11,12 @@ class PoseDetectionController {
     this.poseLandmarks = null;
     this.positionLogContent = null;
     this.isLogCollapsed = false;
+    
+    // FPS tracking
+    this.fps = 0;
+    this.frameCount = 0;
+    this.lastFpsUpdate = performance.now();
+    this.fpsElement = null;
 
     this.init();
   }
@@ -27,6 +33,9 @@ class PoseDetectionController {
     this.positionLogContent = document.querySelector('#position-log-content');
     const toggleLogBtn = document.querySelector('#toggle-log');
     const positionLog = document.querySelector('#position-log');
+    
+    // Setup FPS display
+    this.fpsElement = document.querySelector('#pose-fps');
 
     if (toggleLogBtn && positionLog) {
       toggleLogBtn.addEventListener('click', () => {
@@ -227,6 +236,9 @@ class PoseDetectionController {
   // detectPose method removed - Camera utility handles frame loop
 
   onResults(results) {
+    // Update FPS
+    this.updateFPS();
+    
     // Clear canvas
     this.ctx.save();
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -540,6 +552,24 @@ class PoseDetectionController {
     }
 
     console.log('✅ Pose detection fully stopped - WebGL resources released');
+  }
+
+  updateFPS() {
+    this.frameCount++;
+    const now = performance.now();
+    const elapsed = now - this.lastFpsUpdate;
+
+    // Update FPS every second
+    if (elapsed >= 1000) {
+      this.fps = Math.round((this.frameCount * 1000) / elapsed);
+      this.frameCount = 0;
+      this.lastFpsUpdate = now;
+
+      // Update FPS display
+      if (this.fpsElement) {
+        this.fpsElement.textContent = `FPS: ${this.fps}`;
+      }
+    }
   }
 }
 

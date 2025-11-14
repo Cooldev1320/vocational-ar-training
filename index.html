@@ -53,11 +53,6 @@
           <div class="mode-button-text">Three.js WebXR</div>
           <div class="mode-button-desc">Direct WebXR API</div>
         </button>
-        <button id="aframe-ar-btn" class="mode-button mode-button-ar">
-          <div class="mode-button-icon">🌐</div>
-          <div class="mode-button-text">A-Frame WebXR</div>
-          <div class="mode-button-desc">Coming Soon</div>
-        </button>
         <button id="eighthwall-ar-btn" class="mode-button mode-button-ar">
           <div class="mode-button-icon">🎯</div>
           <div class="mode-button-text">8th Wall</div>
@@ -100,6 +95,7 @@
     <div class="header">
       <h1>AR Training</h1>
       <p id="status">Checking...</p>
+      <p id="ar-fps" class="fps-display">FPS: --</p>
     </div>
 
     <div class="bottom-ui">
@@ -127,6 +123,7 @@
         <button id="back-to-selector" class="btn-back">← Back</button>
         <div class="pose-status">
           <p id="pose-status-text">Initializing...</p>
+          <p id="pose-fps" class="fps-display">FPS: --</p>
         </div>
       </div>
       <!-- Position Logging Panel -->

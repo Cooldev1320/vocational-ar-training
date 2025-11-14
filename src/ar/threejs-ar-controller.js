@@ -12,6 +12,12 @@ class ThreeJSARController {
     this.placedCount = 0;
     this.isARActive = false;
     this.sceneContainer = document.querySelector('#scene');
+    
+    // FPS tracking
+    this.fps = 0;
+    this.frameCount = 0;
+    this.lastFpsUpdate = performance.now();
+    this.fpsElement = null;
 
     this.init();
   }
@@ -60,6 +66,14 @@ class ThreeJSARController {
 
     // EXACT same model loading as boy-model.html
     this.loadBoyModel();
+
+    // Setup FPS display
+    this.fpsElement = document.querySelector('#ar-fps');
+    
+    // Setup FPS tracking in render loop
+    this.renderer.onFrame = (time, renderer) => {
+      this.updateFPS();
+    };
 
     // EXACT same double-tap handler as boy-model.html
     this.renderer.domContainer.ondblclick = (event) => {
@@ -143,6 +157,24 @@ class ThreeJSARController {
       console.log('✅ AR stopped');
     } catch (error) {
       console.error('❌ Error stopping AR:', error);
+    }
+  }
+
+  updateFPS() {
+    this.frameCount++;
+    const now = performance.now();
+    const elapsed = now - this.lastFpsUpdate;
+
+    // Update FPS every second
+    if (elapsed >= 1000) {
+      this.fps = Math.round((this.frameCount * 1000) / elapsed);
+      this.frameCount = 0;
+      this.lastFpsUpdate = now;
+
+      // Update FPS display
+      if (this.fpsElement) {
+        this.fpsElement.textContent = `FPS: ${this.fps}`;
+      }
     }
   }
 }

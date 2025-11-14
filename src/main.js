@@ -9,7 +9,6 @@ class ModeManager {
     this.arModeBtn = document.querySelector('#ar-mode-btn');
     this.poseModeBtn = document.querySelector('#pose-mode-btn');
     this.threejsARBtn = document.querySelector('#threejs-ar-btn');
-    this.aframeARBtn = document.querySelector('#aframe-ar-btn');
     this.eighthwallARBtn = document.querySelector('#eighthwall-ar-btn');
     this.mediaPipeBtn = document.querySelector('#mediapipe-btn');
     this.moveNetBtn = document.querySelector('#movenet-btn');
@@ -37,7 +36,6 @@ class ModeManager {
     this.arModeBtn.addEventListener('click', () => this.showAREngineSelector());
     this.poseModeBtn.addEventListener('click', () => this.showPoseEngineSelector());
     this.threejsARBtn.addEventListener('click', () => this.startThreeJSAR());
-    this.aframeARBtn.addEventListener('click', () => this.startAFrameAR());
     this.eighthwallARBtn.addEventListener('click', () => this.startEighthWallAR());
     this.mediaPipeBtn.addEventListener('click', () => this.startMediaPipePose());
     this.moveNetBtn.addEventListener('click', () => this.startMoveNetPose());
@@ -232,11 +230,6 @@ class ModeManager {
 
     this.switching = false;
     console.log('✅ MoveNet pose detection mode ready');
-  }
-
-  startAFrameAR() {
-    console.log('🌐 A-Frame WebXR - Coming Soon');
-    alert('A-Frame WebXR is coming soon!');
   }
 
   startEighthWallAR() {
