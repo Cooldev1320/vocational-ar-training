@@ -1,16 +1,16 @@
-# Hand Washing AR Training
+# Vocational AR Training
 
-A mobile-first WebXR application for vocational training built with **A-Frame**. Place 3D hand-washing models in augmented reality with an interactive UI overlay that persists in AR mode.
+A mobile-first WebXR application for vocational training with **AR mode** and **Pose Detection** capabilities. Built with Three.js WebXR and MediaPipe/MoveNet for real-time pose tracking.
 
 ## Features
 
-- **Mobile AR Support**: Works on Android phones with Chrome
-- **WebXR Hit-Test**: Accurate floor detection and model placement
-- **Persistent UI Overlay**: Interactive buttons and status display work in AR mode
-- **Tap-to-Place**: Simple touch interaction to place models
-- **Model Counter**: Track how many models you've placed
-- **Reset Functionality**: Clear all models with one button
-- **Responsive Design**: Optimized for mobile, tablet, and desktop
+- **AR Mode**: Place 3D models in augmented reality using Three.js WebXR
+- **Pose Detection**: Real-time body and hand tracking with two engine options:
+  - **MediaPipe**: Google's ML solution for pose detection
+  - **MoveNet**: TensorFlow.js-based faster alternative
+- **FPS Counter**: Real-time framerate display for performance monitoring
+- **Mode Selector**: Beautiful UI to choose between AR and Pose Detection modes
+- **Mobile Optimized**: Works on Android devices with Chrome
 
 ## Setup
 
@@ -26,7 +26,7 @@ npm install
 npm run dev
 ```
 
-The dev server will start on https://localhost:3000 with SSL enabled.
+The dev server will start on `https://localhost:3000` with SSL enabled.
 
 ### Accessing on Mobile
 
@@ -39,94 +39,56 @@ The dev server will start on https://localhost:3000 with SSL enabled.
 
 ## Usage
 
-### Mobile AR (Android)
-1. Open the app in Chrome on your Android device
-2. Tap "Enter AR" button
+### AR Mode
+1. Click "AR Mode" from the main menu
+2. Select "Three.js WebXR" engine
 3. Grant camera permissions when prompted
-4. Point your camera at the floor/ground
-5. Tap anywhere on the screen to place hand-washing models
-6. Use "Reset Models" button to clear all placed models
+4. Point your camera at a flat surface
+5. Double-tap to place 3D models
+6. FPS counter shows real-time performance
 
-### Desktop Preview
-- Open in desktop Chrome to see the 3D scene
-- Press SPACEBAR or click to place models
-- AR mode won't work on desktop (requires mobile device with AR support)
+### Pose Detection Mode
+1. Click "Pose Detection" from the main menu
+2. Choose between:
+   - **MediaPipe**: More accurate, Google's ML solution
+   - **MoveNet**: Faster, TensorFlow.js-based
+3. Grant camera permissions
+4. See real-time pose tracking with dots and lines following your movements
+5. Hand movements are highlighted with colored dots
+6. FPS counter displays detection framerate
 
 ## Project Structure
 
 ```
-vocational-ar-training_aframe/
+vocational-ar-training/
 ├── public/
 │   └── models/
-│       └── hand-washing.glb    # 3D model file
+│       └── boy.glb              # 3D model for AR
 ├── src/
-│   ├── main.js                 # AR logic and components
-│   └── style.css               # UI overlay styles
-├── index.html                  # Main HTML with A-Frame scene
-├── vite.config.js              # Vite config with SSL
+│   ├── ar/
+│   │   └── threejs-ar-controller.js  # Three.js WebXR AR controller
+│   ├── pose/
+│   │   ├── pose-detection.js    # MediaPipe pose detection
+│   │   └── movenet-detection.js # MoveNet pose detection
+│   ├── main.js                  # Mode manager and app entry
+│   ├── style.css                # UI styles
+│   ├── ARRenderer.ts            # WebXR renderer (enva-xr)
+│   └── enva.ts                  # AR utilities
+├── example/
+│   └── boy-model.html           # Standalone AR example
+├── index.html                   # Main HTML
+├── vite.config.js               # Vite config with SSL
 └── package.json
 ```
 
 ## Technologies
 
-- **A-Frame 1.6.0** - WebXR framework
+- **Three.js** - 3D graphics and WebXR rendering
+- **enva-xr** - Environment-aware AR renderer
+- **MediaPipe** - Google's ML pose detection
+- **TensorFlow.js** - MoveNet pose detection
 - **WebXR Device API** - AR/VR capabilities
-- **WebXR Hit-Test API** - Surface detection
 - **Vite** - Dev server with HTTPS support
-
-## How It Works
-
-### A-Frame Scene
-The app uses A-Frame's declarative HTML approach to create a 3D/AR scene:
-- `<a-scene webxr>` enables WebXR mode with hit-test support
-- `dom-overlay` feature keeps HTML UI visible in AR mode
-- Custom `ar-hit-test` component handles surface detection
-
-### UI Overlay
-The UI overlay (`#ui-overlay`) is specified in the WebXR session options and persists in AR mode:
-- Header with title and status
-- Control buttons (Enter AR, Reset Models)
-- Instructions and model counter
-- All styled with glassmorphism effects for better visibility
-
-### Tap-to-Place
-The `ARController` class handles user interactions:
-1. Detects touch/click events
-2. Gets hit-test results from the AR session
-3. Places models at the detected surface location
-4. Falls back to camera-relative placement if hit-test unavailable
-
-### Model Management
-- Models are loaded from `/public/models/hand-washing.glb`
-- Each placement creates a new entity cloned from the asset
-- Animated scale effect on placement
-- Random rotation for variety
-
-## Customization
-
-### Change Model
-Replace `/public/models/hand-washing.glb` with your own GLB/GLTF model and update `index.html:40`:
-```html
-<a-asset-item id="hand-washing-model" src="/models/your-model.glb"></a-asset-item>
-```
-
-### Adjust Model Scale
-Edit scale in `src/main.js:162`:
-```javascript
-modelEntity.setAttribute('scale', '0.2 0.2 0.2'); // Adjust these values
-```
-
-### Modify UI Colors
-Edit `src/style.css` - look for the gradient in `.btn-primary`:
-```css
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-```
-
-### Change Placement Distance
-Edit distance in `src/main.js:192`:
-```javascript
-const distance = 1.5; // Meters in front of camera
-```
 
 ## Browser Compatibility
 
@@ -136,7 +98,7 @@ const distance = 1.5; // Meters in front of camera
 
 ### Limited/No Support
 - **iOS**: WebXR AR not yet supported in Safari (as of 2024)
-- **Desktop**: No AR capability (3D preview works)
+- **Desktop**: AR mode requires mobile device, but Pose Detection works on desktop
 - **Firefox**: Limited WebXR support
 
 ## Troubleshooting
@@ -150,42 +112,29 @@ const distance = 1.5; // Meters in front of camera
 - Go to Chrome Settings > Site Settings > Camera
 - Find your site and set to "Allow"
 
-### Models not placing
-- Make sure hit-test is working (check console logs)
-- Try the fallback by tapping screen multiple times
-- Ensure good lighting and a visible floor/surface
-
-### UI not showing in AR
-- This should work automatically with `dom-overlay` feature
-- If not, your device may not support this WebXR feature
-- Check console for error messages
+### Pose detection not working
+- Ensure camera permissions are granted
+- Check internet connection (MediaPipe loads from CDN)
+- Try the alternative engine (MediaPipe vs MoveNet)
 
 ### SSL certificate warning
 - This is normal for local development with self-signed certs
 - Click "Advanced" and "Proceed" to continue
 - For production, use a proper SSL certificate
 
-## Development Notes
+## Development
 
-- The `ar-hit-test` component in `main.js` integrates with WebXR's hit-test API
-- Hit-test requires `local-floor` reference space and viewer space
-- The scene uses A-Frame's entity-component system for modularity
-- UI overlay uses `pointer-events: none` on the container but enables it for interactive elements
+### Running the dev server
+```bash
+npm run dev
+```
 
-## Production Deployment
+### Building for production
+```bash
+npm run build
+```
 
-For production:
-1. Build the project: `npm run build`
-2. Deploy the `dist` folder to a static host with HTTPS
-3. Ensure your domain has a valid SSL certificate
-4. Test on real Android devices
-
-## References
-
-- [A-Frame Documentation](https://aframe.io/docs/)
-- [WebXR Device API](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API)
-- [WebXR Hit-Test](https://immersive-web.github.io/hit-test/)
-- [WebXR Samples](https://immersive-web.github.io/webxr-samples/)
+The built files will be in the `dist/` folder.
 
 ## License
 
@@ -193,4 +142,4 @@ MIT
 
 ---
 
-Built with A-Frame for vocational training in augmented reality.
+Built for vocational training with AR and pose detection capabilities.
