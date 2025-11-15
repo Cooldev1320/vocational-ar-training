@@ -2,6 +2,10 @@
 
 A mobile-first WebXR application for vocational training with **AR mode** and **Pose Detection** capabilities. Built with Three.js WebXR and MediaPipe/MoveNet for real-time pose tracking.
 
+## 🚀 Live Demo
+
+**Try it now:** [https://vocational-ar-training.vercel.app/](https://vocational-ar-training.vercel.app/)
+
 ## Features
 
 - **AR Mode**: Place 3D models in augmented reality using Three.js WebXR
